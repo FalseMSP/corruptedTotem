@@ -3,7 +3,8 @@
 	"package": "com.redsmods.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"LivingEntityMixin"
+		"LivingEntityMixin",
+		"RespawnMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -1,0 +1,18 @@
+{
+  "corrupted.mania.screen.title": "OsuCraft",
+  "corrupted.mania.screen.import": "Import Beatmap (.osu)",
+  "corrupted.mania.screen.play": "Play",
+  "corrupted.mania.screen.back": "Back",
+  "corrupted.mania.screen.no_beatmap": "No beatmap loaded. Import a .osu file.",
+  "corrupted.mania.screen.score": "Score: %d",
+  "corrupted.mania.screen.combo": "Combo: %dx",
+  "corrupted.mania.screen.accuracy": "Accuracy: %.1f%%",
+  "corrupted.mania.screen.perfect": "PERFECT",
+  "corrupted.mania.screen.great": "GREAT",
+  "corrupted.mania.screen.good": "GOOD",
+  "corrupted.mania.screen.miss": "MISS",
+  "corrupted.mania.screen.results": "Results",
+  "corrupted.mania.screen.beatmap_loaded": "Beatmap: %s",
+  "corrupted.mania.screen.hit_keys": "Keys: [D] [F] [J] [K]",
+  "corrupted.mania.key.open_menu": "Open OsuCraft"
+}

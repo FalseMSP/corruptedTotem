@@ -36,6 +36,29 @@ public class GameEngine {
             }
         }
 
+        // Check held keys against notes that just entered the hit window
+        for (int c = 0; c < GameState.COLUMNS; c++) {
+            if (!state.columnPressed[c]) continue;
+
+            for (int i = state.noteIndex; i < state.beatmap.notes.size(); i++) {
+                OsuBeatmap.ManiaNote note = state.beatmap.notes.get(i);
+                if (note.hit || note.missed) continue;
+                if (note.column != c) continue;
+                if (note.startTime > now + state.beatmap.hitWindow50) break;
+
+                long delta = Math.abs(now - note.startTime);
+                if (delta <= state.beatmap.hitWindow50) {
+                    note.hit = true;
+                    GameState.HitResult.Type type;
+                    if (delta <= state.beatmap.hitWindow300)      type = GameState.HitResult.Type.PERFECT;
+                    else if (delta <= state.beatmap.hitWindow100) type = GameState.HitResult.Type.GREAT;
+                    else                                          type = GameState.HitResult.Type.GOOD;
+                    state.registerHit(type, c);
+                    break;
+                }
+            }
+        }
+
         // Check if game ended
         if (state.isFinished()) {
             state.phase = GameState.Phase.FINISHED;

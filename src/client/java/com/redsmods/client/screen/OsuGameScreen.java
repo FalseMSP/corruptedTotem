@@ -37,7 +37,7 @@ public class OsuGameScreen extends Screen {
     // ── Layout constants ──────────────────────────────────────────────────────
     private static final int COLUMNS = GameState.COLUMNS;
     /** Note square size in pixels */
-    private static final int NOTE_SIZE = 40;
+    private static final int NOTE_SIZE = 24;
     private static final int COLUMN_GAP = 4;
     /** Total width of all columns */
     private static final int PLAYFIELD_WIDTH = COLUMNS * NOTE_SIZE + (COLUMNS - 1) * COLUMN_GAP;
@@ -53,18 +53,42 @@ public class OsuGameScreen extends Screen {
     private static final int COL_COLUMN_EDGE = 0xFF334455;
     private static final int COL_HIT_ZONE    = 0xFF223344;
     private static final int COL_HIT_LINE    = 0xFFAADDFF;
+
+    /** Normal (tap) note colors */
     private static final int[] COL_NOTE = {
-        0xFFFF6688, // col 0 – pink
-        0xFF88BBFF, // col 1 – blue
-        0xFF88BBFF, // col 2 – blue
-        0xFFFF6688, // col 3 – pink
+            0xFFFF6688, // col 0 – pink
+            0xFF88BBFF, // col 1 – blue
+            0xFF88BBFF, // col 2 – blue
+            0xFFFF6688, // col 3 – pink
     };
     private static final int[] COL_NOTE_PRESSED = {
-        0xFFFFAABB, // lit up when key held
-        0xFFBBDDFF,
-        0xFFBBDDFF,
-        0xFFFFAABB,
+            0xFFFFAABB, // lit up when key held
+            0xFFBBDDFF,
+            0xFFBBDDFF,
+            0xFFFFAABB,
     };
+
+    /** Hold note colors – warm gold/orange to distinguish from tap notes */
+    private static final int[] COL_HOLD = {
+            0xFFFFAA22, // col 0 – orange
+            0xFF44FFAA, // col 1 – mint
+            0xFF44FFAA, // col 2 – mint
+            0xFFFFAA22, // col 3 – orange
+    };
+    private static final int[] COL_HOLD_PRESSED = {
+            0xFFFFCC66,
+            0xFF88FFCC,
+            0xFF88FFCC,
+            0xFFFFCC66,
+    };
+    /** Hold body trail color – semi-transparent tint of the head color */
+    private static final int[] COL_HOLD_BODY = {
+            0xAAFF9900,
+            0xAA22DDAA,
+            0xAA22DDAA,
+            0xAAFF9900,
+    };
+
     private static final int COL_PERFECT  = 0xFFFFEE44;
     private static final int COL_GREAT    = 0xFF44DDFF;
     private static final int COL_GOOD     = 0xFF88FF44;
@@ -74,7 +98,7 @@ public class OsuGameScreen extends Screen {
 
     // ── Key bindings: D F J K (indices match GLFW key codes) ─────────────────
     private static final int[] COLUMN_KEYS = {GLFW.GLFW_KEY_D, GLFW.GLFW_KEY_F,
-                                              GLFW.GLFW_KEY_J, GLFW.GLFW_KEY_K};
+            GLFW.GLFW_KEY_J, GLFW.GLFW_KEY_K};
 
     // ── State ─────────────────────────────────────────────────────────────────
     private final GameState state;
@@ -163,7 +187,7 @@ public class OsuGameScreen extends Screen {
     }
 
     @Override
-    public boolean keyReleased(KeyEvent event) {    // KeyEvent, not (int, int, int)
+    public boolean keyReleased(KeyEvent event) {
         for (int c = 0; c < COLUMNS; c++) {
             if (event.key() == COLUMN_KEYS[c]) {
                 state.columnPressed[c] = false;
@@ -216,25 +240,50 @@ public class OsuGameScreen extends Screen {
             if (noteY > pfBottom) continue;
 
             int noteX = pfLeft + note.column * (NOTE_SIZE + COLUMN_GAP);
+            boolean isHold = note.isHold();
 
-            int color = state.columnPressed[note.column] ? COL_NOTE_PRESSED[note.column] : COL_NOTE[note.column];
+            // Pick color set based on note type
+            int color;
+            if (isHold) {
+                color = state.columnPressed[note.column]
+                        ? COL_HOLD_PRESSED[note.column]
+                        : COL_HOLD[note.column];
+            } else {
+                color = state.columnPressed[note.column]
+                        ? COL_NOTE_PRESSED[note.column]
+                        : COL_NOTE[note.column];
+            }
 
-            // Draw note square
+            // Draw hold trail BEFORE the head so the head renders on top
+            if (isHold) {
+                int endDeltaMs = (int) (note.endTime - nowMs);
+                float te = (float) endDeltaMs / GameState.SCROLL_MS;
+                int holdEndY = hitZoneY - (int) (te * (hitZoneY - pfTop));
+                int holdTop  = Math.max(pfTop,   Math.min(noteY, holdEndY));
+                int holdBot  = Math.min(pfBottom, Math.max(noteY + NOTE_SIZE, holdEndY));
+
+                int hx = noteX + NOTE_SIZE / 2 - 6;
+                // Body
+                gfx.fill(hx, holdTop, hx + 12, holdBot, COL_HOLD_BODY[note.column]);
+                // Bright edge lines down each side of the body
+                gfx.fill(hx,      holdTop, hx + 2,  holdBot, 0x88FFFFFF);
+                gfx.fill(hx + 10, holdTop, hx + 12, holdBot, 0x88FFFFFF);
+                // End cap
+                gfx.fill(hx, holdEndY - 4, hx + 12, holdEndY, color);
+            }
+
+            // Draw note head square
             gfx.fill(noteX, noteY, noteX + NOTE_SIZE, noteY + NOTE_SIZE, color);
 
             // Inner highlight
             gfx.fill(noteX + 3, noteY + 3, noteX + NOTE_SIZE - 3, noteY + 8, 0x44FFFFFF);
 
-            // Draw hold trail if it's a hold note
-            if (note.isHold()) {
-                int endDeltaMs = (int) (note.endTime - nowMs);
-                float te = (float) endDeltaMs / GameState.SCROLL_MS;
-                int holdEndY = hitZoneY - (int) (te * (hitZoneY - pfTop));
-                int holdTop = Math.max(pfTop, Math.min(noteY, holdEndY));
-                int holdBot = Math.min(pfBottom, Math.max(noteY + NOTE_SIZE, holdEndY));
-                // Draw hold body as a narrow strip
-                int hx = noteX + NOTE_SIZE / 2 - 6;
-                gfx.fill(hx, holdTop, hx + 12, holdBot, 0x88AADDFF);
+            // Extra outline on hold heads to make them pop
+            if (isHold) {
+                gfx.fill(noteX,                  noteY,                  noteX + NOTE_SIZE, noteY + 2,           0xAAFFFFFF);
+                gfx.fill(noteX,                  noteY + NOTE_SIZE - 2,  noteX + NOTE_SIZE, noteY + NOTE_SIZE,   0x55FFFFFF);
+                gfx.fill(noteX,                  noteY,                  noteX + 2,         noteY + NOTE_SIZE,   0xAAFFFFFF);
+                gfx.fill(noteX + NOTE_SIZE - 2,  noteY,                  noteX + NOTE_SIZE, noteY + NOTE_SIZE,   0xAAFFFFFF);
             }
         }
     }
@@ -325,7 +374,7 @@ public class OsuGameScreen extends Screen {
             }
 
             int lx = pfLeft + hit.column * (NOTE_SIZE + COLUMN_GAP)
-                     + (NOTE_SIZE - this.font.width(label)) / 2;
+                    + (NOTE_SIZE - this.font.width(label)) / 2;
             gfx.text(this.font, label, lx, baseY, color);
         }
     }

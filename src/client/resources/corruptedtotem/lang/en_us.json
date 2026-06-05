@@ -1,5 +1,5 @@
 {
-  "corrupted.mania.screen.title": "OsuCraft",
+  "corrupted.mania.screen.title": "Corrupted Mania",
   "corrupted.mania.screen.import": "Import Beatmap (.osu)",
   "corrupted.mania.screen.play": "Play",
   "corrupted.mania.screen.back": "Back",
@@ -13,6 +13,5 @@
   "corrupted.mania.screen.miss": "MISS",
   "corrupted.mania.screen.results": "Results",
   "corrupted.mania.screen.beatmap_loaded": "Beatmap: %s",
-  "corrupted.mania.screen.hit_keys": "Keys: [D] [F] [J] [K]",
-  "corrupted.mania.key.open_menu": "Open OsuCraft"
+  "corrupted.mania.screen.hit_keys": "Keys: [D] [F] [J] [K]"
 }

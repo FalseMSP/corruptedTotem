@@ -10,17 +10,19 @@ import net.minecraft.resources.Identifier;
  * Sent client → server when the local player finishes a song.
  * The server mod listens for this to trigger its visual/audio effects.
  */
-public record SongEndPayload() implements CustomPacketPayload {
+public record SongEndPayload(char grade) implements CustomPacketPayload {
 
     public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(CorruptedTotem.MOD_ID, "sond_end");
+            Identifier.fromNamespaceAndPath(CorruptedTotem.MOD_ID, "song_end");
 
-    public static final CustomPacketPayload.Type<com.redsmods.network.SongEndPayload> TYPE =
+    public static final CustomPacketPayload.Type<SongEndPayload> TYPE =
             new CustomPacketPayload.Type<>(ID);
 
-    /** No fields — the event itself is the signal, nothing to read/write. */
-    public static final StreamCodec<FriendlyByteBuf, com.redsmods.network.SongEndPayload> CODEC =
-            StreamCodec.unit(new com.redsmods.network.SongEndPayload());
+    public static final StreamCodec<FriendlyByteBuf, SongEndPayload> CODEC =
+            StreamCodec.of(
+                    (buf, payload) -> buf.writeChar(payload.grade()),
+                    buf -> new SongEndPayload(buf.readChar())
+            );
 
     @Override
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {

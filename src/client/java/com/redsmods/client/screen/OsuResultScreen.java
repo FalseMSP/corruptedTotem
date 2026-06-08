@@ -5,6 +5,7 @@ import com.redsmods.client.network.ClientNetworkHandler;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -25,22 +26,28 @@ public class OsuResultScreen extends Screen {
     protected void init() {
         super.init();
         // Retry button
-        this.addRenderableWidget(Button.builder(
-            Component.literal("Retry"),
-            btn -> {
-                assert this.minecraft != null;
-                GameState fresh = new GameState(state.beatmap);
-                this.minecraft.setScreen(new OsuGameScreen(parent, fresh));
-            }
-        ).pos(this.width / 2 - 105, this.height - 60).size(100, 20).build());
+        Button retryButton = Button.builder(
+                        Component.literal("Retry"),
+                        btn -> {
+                            assert this.minecraft != null;
+                            GameState fresh = new GameState(state.beatmap);
+                            this.minecraft.setScreen(new OsuGameScreen(parent, fresh));
+                        }
+                )
+                .pos(this.width / 2 - 105, this.height - 60)
+                .size(100, 20)
+                .build();
+
+        retryButton.active = false; // grays out and disables clicks
+
 
         // Menu button
         this.addRenderableWidget(Button.builder(
             Component.literal("Quit"),
             btn -> {
                 assert this.minecraft != null;
-                this.minecraft.setScreen(minecraft.screen);
-                ClientNetworkHandler.sendSongEnd();
+                this.minecraft.setScreen(null);
+                ClientNetworkHandler.sendSongEnd(computeGrade().charAt(0));
             }
         ).pos(this.width / 2 + 5, this.height - 60).size(100, 20).build());
     }
@@ -120,5 +127,17 @@ public class OsuResultScreen extends Screen {
         ps.scale(2.0f, 2.0f);
         gfx.text(this.font, text, -this.font.width(text) / 2, 0, color);
         ps.popMatrix();               // was pushMatrix() — must pop to restore state
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        // ESC → pause / back
+        if (event.isEscape()) {
+            assert this.minecraft != null;
+            this.minecraft.setScreen(null);
+            ClientNetworkHandler.sendSongEnd(computeGrade().charAt(0));
+            return true;
+        }
+        return super.keyPressed(event);
     }
 }

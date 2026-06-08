@@ -34,9 +34,9 @@ public class ClientNetworkHandler {
         }
     }
 
-    public static void sendSongEnd() {
+    public static void sendSongEnd(char grade) {
         if (ClientPlayNetworking.canSend(SongEndPayload.ID)) {
-            ClientPlayNetworking.send(new SongEndPayload());
+            ClientPlayNetworking.send(new SongEndPayload(grade));
         }
     }
 }

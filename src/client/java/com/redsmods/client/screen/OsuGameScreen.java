@@ -145,8 +145,7 @@ public class OsuGameScreen extends Screen {
             if (state.phase == GameState.Phase.PLAYING) {
                 state.pause();
             } else if (state.phase == GameState.Phase.PAUSED) {
-                assert this.minecraft != null;
-                this.minecraft.setScreen(parent);
+                state.resume();
             }
             return true;
         }
@@ -418,7 +417,7 @@ public class OsuGameScreen extends Screen {
 
     private void drawPauseOverlay(GuiGraphicsExtractor gfx) {
         gfx.fill(0, 0, this.width, this.height, 0x88000000);
-        String msg = "PAUSED  –  [ENTER] Resume  [ESC] Quit";
+        String msg = "PAUSED  –  [ENTER] Resume";
         int mx = (this.width - this.font.width(msg)) / 2;
         int my = this.height / 2 - 6;
         gfx.text(this.font, msg, mx, my, 0xFFFFFFFF);

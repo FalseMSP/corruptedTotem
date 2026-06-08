@@ -35,6 +35,12 @@ public class GameState {
     /** Index into beatmap.notes for the first unprocessed note */
     public int noteIndex = 0;
 
+    /**
+     * Hold notes currently being held by the player, one slot per column.
+     * Null means no active hold in that column.
+     */
+    public OsuBeatmap.ManiaNote[] activeHolds = new OsuBeatmap.ManiaNote[COLUMNS];
+
     // ── Scoring ───────────────────────────────────────────────────────────────
 
     public long score = 0;
@@ -129,8 +135,14 @@ public class GameState {
     // ── Finish Check ──────────────────────────────────────────────────────────
 
     public boolean isFinished() {
-        return noteIndex >= beatmap.notes.size()
-                && getCurrentMs() > (beatmap.notes.isEmpty() ? 0
-                    : beatmap.notes.get(beatmap.notes.size() - 1).startTime + 2000);
+        if (noteIndex < beatmap.notes.size()) return false;
+        // Also wait for any active holds to resolve
+        for (OsuBeatmap.ManiaNote hold : activeHolds) {
+            if (hold != null) return false;
+        }
+        if (beatmap.notes.isEmpty()) return true;
+        OsuBeatmap.ManiaNote last = beatmap.notes.get(beatmap.notes.size() - 1);
+        // Use endTime so hold notes get their full duration before finishing
+        return getCurrentMs() > last.endTime + 2000;
     }
 }

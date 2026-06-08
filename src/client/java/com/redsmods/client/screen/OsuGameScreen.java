@@ -223,6 +223,43 @@ public class OsuGameScreen extends Screen {
 
         int hitZoneY = pfBottom - HIT_ZONE_HEIGHT;
 
+        // ── 1. Draw the trailing body+tail of any currently-held hold notes ──
+        // Once the player presses a hold head it is marked note.hit = true and
+        // disappears from the normal loop below. We draw its remaining tail here,
+        // anchored to the hit line, so it stays visible until the tail passes.
+        for (int c = 0; c < GameState.COLUMNS; c++) {
+            OsuBeatmap.ManiaNote hold = state.activeHolds[c];
+            if (hold == null) continue;
+
+            int endDeltaMs = (int) (hold.endTime - nowMs);
+            float te = (float) endDeltaMs / GameState.SCROLL_MS;
+            // Tail Y position (scrolls up toward pfTop as time passes)
+            int tailY = hitZoneY - (int) (te * (hitZoneY - pfTop));
+
+            // Only draw while the tail is still above the hit line
+            if (tailY >= hitZoneY) continue;
+
+            int noteX = pfLeft + c * (NOTE_SIZE + COLUMN_GAP);
+            int hx    = noteX + NOTE_SIZE / 2 - 6;
+            int color = COL_HOLD_PRESSED[c]; // always lit while being held
+
+            // Body runs from the tail down to the hit line
+            int bodyTop = Math.max(pfTop, tailY);
+            int bodyBot = hitZoneY;
+            if (bodyTop < bodyBot) {
+                gfx.fill(hx,      bodyTop, hx + 12, bodyBot, COL_HOLD_BODY[c]);
+                gfx.fill(hx,      bodyTop, hx + 2,  bodyBot, 0x88FFFFFF);
+                gfx.fill(hx + 10, bodyTop, hx + 12, bodyBot, 0x88FFFFFF);
+            }
+
+            // Tail end cap
+            int capTop = Math.max(pfTop, tailY - 4);
+            if (capTop < tailY) {
+                gfx.fill(hx, capTop, hx + 12, tailY, color);
+            }
+        }
+
+        // ── 2. Draw normal (unhit/unmissed) notes ────────────────────────────
         for (OsuBeatmap.ManiaNote note : notes) {
             if (note.hit || note.missed) continue;
 

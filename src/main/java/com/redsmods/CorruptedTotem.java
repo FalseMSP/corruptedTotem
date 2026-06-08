@@ -20,6 +20,7 @@ public class CorruptedTotem implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		ModNetworking.register();
+		VisualDomain.registerCleanupHook();
 		LOGGER.info("Initalized Succesfully");
 	}
 }

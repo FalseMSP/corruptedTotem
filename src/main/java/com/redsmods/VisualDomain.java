@@ -1,5 +1,6 @@
 package com.redsmods;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Brightness;
@@ -159,6 +160,19 @@ public class VisualDomain {
         ServerTickEvents.END_LEVEL_TICK.register(level -> {
             if (level != sde.level) return;
             sde.tick();
+        });
+    }
+
+    public static void registerCleanupHook() {
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            for (VisualDomain domain : domainMap.values()) {
+                if (domain.entity != null && !domain.entity.isRemoved()) {
+                    domain.entity.discard();
+                    domain.entity = null;
+                }
+                domain.phase = Phase.DONE;
+            }
+            domainMap.clear();
         });
     }
 }

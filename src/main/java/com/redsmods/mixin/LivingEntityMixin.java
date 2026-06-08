@@ -1,9 +1,13 @@
 package com.redsmods.mixin;
 
+import com.redsmods.VisualDomain;
 import com.redsmods.network.TotemPopPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -45,6 +49,9 @@ public class LivingEntityMixin {
 
 		if (canSend) {
 			ServerPlayNetworking.send(player, new TotemPopPayload());
+            VisualDomain domain = new VisualDomain(player);
+			domain.spawn();
+			VisualDomain.autoTick(domain);
 		}
 	}
 }

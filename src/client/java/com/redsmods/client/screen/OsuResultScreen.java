@@ -1,6 +1,7 @@
 package com.redsmods.client.screen;
 
 import com.redsmods.client.game.GameState;
+import com.redsmods.client.network.ClientNetworkHandler;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,10 +36,11 @@ public class OsuResultScreen extends Screen {
 
         // Menu button
         this.addRenderableWidget(Button.builder(
-            Component.literal("Song Select"),
+            Component.literal("Quit"),
             btn -> {
                 assert this.minecraft != null;
-                this.minecraft.setScreen(parent);
+                this.minecraft.setScreen(minecraft.screen);
+                ClientNetworkHandler.sendSongEnd();
             }
         ).pos(this.width / 2 + 5, this.height - 60).size(100, 20).build());
     }
